@@ -24,23 +24,21 @@ void initialize(struct collisionVector* c, int col)
  	initialize(&cv,col);
  	// iterate over each row and find the forbidden latencies
  	int i,j,k,l,latency,max;
- 	for(k = 0; k < col; k++){
- 		latency = 0;
- 		for(i = 0; i < row; i++){//check for every state
- 			for(j = 0; j < col-1; j++){
- 				if(reservationTable[i][j] == 1){ // i.e if the state has reserved some space in the reservation table
- 					for(l = j+1; l < col; l++){
- 						if(reservationTable[i][l] == 1){
- 							latency = l - j;
- 							if(!cv.arr[latency-1])
- 								cv.arr[latency-1] = 1;
- 						}
- 					}	
- 				}
- 				
+ 	latency = 0;
+ 	for(i = 0; i < row; i++){//check for every state
+ 		for(j = 0; j < col-1; j++){
+ 			if(reservationTable[i][j] == 1){ // i.e if the state has reserved some space in the reservation table
+ 				for(l = j+1; l < col; l++){
+ 					if(reservationTable[i][l] == 1){
+ 						latency = l - j;
+ 						if(!cv.arr[latency-1])
+ 							cv.arr[latency-1] = 1;
+ 					}
+ 				}	
  			}
  		}
  	}
+ 	
  	for(i = col-1; i > -1; i--){
  		if(cv.arr[i] == 1){
  			cv.length = i;
@@ -76,6 +74,6 @@ void initialize(struct collisionVector* c, int col)
  	printf("\n");
 
  }
- 
+ /*
 //  Resultant collision vector is 1	0	1	1	0	0	0	1
  */
