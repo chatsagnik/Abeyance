@@ -7,12 +7,13 @@
 
 struct collisionVector{
 	int arr[COL];
+	int length;
 };
 
-void initialize(struct collisionVector* c)
+void initialize(struct collisionVector* c, int col)
 {
 	int i;
-	for(i = 0; i < COL; i++){
+	for(i = 0; i < col; i++){
 		c->arr[i] = 0;
 	}
 }
@@ -20,9 +21,9 @@ void initialize(struct collisionVector* c)
  struct collisionVector createCollisionVector(int reservationTable[ROW][COL],int row,int col)
  {
  	struct collisionVector cv;
- 	initialize(&cv);
+ 	initialize(&cv,col);
  	// iterate over each row and find the forbidden latencies
- 	int i,j,k,l,latency;
+ 	int i,j,k,l,latency,max;
  	for(k = 0; k < col; k++){
  		latency = 0;
  		for(i = 0; i < row; i++){//check for every state
@@ -40,14 +41,20 @@ void initialize(struct collisionVector* c)
  			}
  		}
  	}
+ 	for(i = col-1; i > -1; i--){
+ 		if(cv.arr[i] == 1){
+ 			cv.length = i;
+ 			break;
+ 		}
+ 	}
  	return cv;
  }
 /*
  int main()
  {
  	int arr[ROW][COL], i, j;
- 	for(i = 0; i < 5; i++){
- 		for(j = 0; j < 9; j++){
+ 	for(i = 0; i < 10; i++){
+ 		for(j = 0; j < 10; j++){
  			arr[i][j] = 0;
  		}
  	}
@@ -62,13 +69,13 @@ void initialize(struct collisionVector* c)
  	arr[4][6] = 1;
  	arr[4][7] = 1;
 
- 	struct collisionVector c = createCollisionVector(arr, 5, 9);
- 	for(i = 8; i > -1; i--){
+ 	struct collisionVector c = createCollisionVector(arr, 10, 10);
+ 	for(i = c.length; i > -1; i--){
  		printf("%d\t",c.arr[i]);
  	}
  	printf("\n");
 
  }
  
- Resultant collision vector is 0	1	0	1	1	0	0	0	1
+//  Resultant collision vector is 1	0	1	1	0	0	0	1
  */
