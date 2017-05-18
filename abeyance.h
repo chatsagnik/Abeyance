@@ -4,13 +4,21 @@
 
 #define ROW 100
 #define COL 100
+#define SIZE 100
 
 struct collisionVector{
 	int arr[COL];
 	int length;
 };
 
-void initialize(struct collisionVector* c, int col)
+struct state{ // Each state has its own collision vector, and an array of next states. In a One-One mapping each of these have a latency associated with it.
+	int value;
+	struct collisionVector* cv;
+	struct state* next[SIZE];
+	int latency[SIZE];
+};
+
+void initializeCollisionVector(struct collisionVector* c, int col)
 {
 	int i;
 	for(i = 0; i < col; i++){
@@ -18,10 +26,11 @@ void initialize(struct collisionVector* c, int col)
 	}
 }
 
- struct collisionVector createCollisionVector(int reservationTable[ROW][COL],int row,int col)
+
+ struct collisionVector createInitialCollisionVector(int reservationTable[ROW][COL],int row,int col)
  {
  	struct collisionVector cv;
- 	initialize(&cv,col);
+ 	initializeCollisionVector(&cv,col);
  	// iterate over each row and find the forbidden latencies
  	int i,j,k,l,latency,max;
  	latency = 0;
@@ -41,12 +50,41 @@ void initialize(struct collisionVector* c, int col)
  	
  	for(i = col-1; i > -1; i--){
  		if(cv.arr[i] == 1){
- 			cv.length = i;
+ 			cv.length = i+1;
  			break;
  		}
  	}
  	return cv;
  }
+
+struct state* createNewState(struct collisionVector* c)
+{
+	struct state* newState = (struct state*)malloc(sizeof(struct state));
+	newState->cv = c;
+	newState->value = 0;
+	int i;
+	for(i = 0; i < c->length; i++){
+		int mult = (int)pow(2,i);
+		newState->value += c->arr[i] * mult;
+	}
+	return newState;
+}
+
+struct collisionVector createNewCollisionVector(struct collisionVector* c1,struct collisionVector* c2, int latency)
+{
+	struct collisionVector cv;
+	cv.length = c1->length;
+ 	initializeCollisionVector(&cv,c1->length);
+ 	int i;
+ 	for(i = 0; i < c1->length-latency; i++){
+ 	    cv.arr[i] = c1->arr[i+latency];
+ 	}
+ 	for(i = 0; i < cv.length; i++){
+ 	    cv.arr[i] = cv.arr[i] || c2->arr[i];
+ 	}
+ 	return cv;
+}
+
 /*
  int main()
  {
@@ -67,9 +105,23 @@ void initialize(struct collisionVector* c, int col)
  	arr[4][6] = 1;
  	arr[4][7] = 1;
 
- 	struct collisionVector c = createCollisionVector(arr, 10, 10);
- 	for(i = c.length; i > -1; i--){
+ 	struct collisionVector initialVector = createInitialCollisionVector(arr,10,10);
+	for(i = c.length; i > -1; i--){
  		printf("%d\t",c.arr[i]);
+ 	}
+	print("\n");
+	
+ 	struct state* newState = createNewState(&initialVector);
+ 	printf("%d\n",newState->value);
+ 	
+ 	for(i = 0; i< newState->cv->length; i++){
+ 	    if(newState->cv->arr[i] == 0){
+ 	        struct collisionVector c = createNewCollisionVector(newState->cv, &initialVector, i+1);
+ 	        for(j = c.length-1; j>-1; j--){
+ 	            printf("%d\t",c.arr[j]);
+ 	        }
+ 	        printf("\n");
+ 	    }
  	}
  	printf("\n");
 
