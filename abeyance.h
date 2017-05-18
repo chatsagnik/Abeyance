@@ -104,12 +104,11 @@ struct collisionVector createNewCollisionVector(struct collisionVector* c1,struc
  	arr[3][5] = 1;
  	arr[4][6] = 1;
  	arr[4][7] = 1;
-
  	struct collisionVector initialVector = createInitialCollisionVector(arr,10,10);
-	for(i = c.length; i > -1; i--){
- 		printf("%d\t",c.arr[i]);
+	for(i = initialVector.length-1; i > -1; i--){
+ 		printf("%d\t",initialVector.arr[i]);
  	}
-	print("\n");
+	printf("\n");
 	
  	struct state* newState = createNewState(&initialVector);
  	printf("%d\n",newState->value);
@@ -124,7 +123,6 @@ struct collisionVector createNewCollisionVector(struct collisionVector* c1,struc
  	    }
  	}
  	printf("\n");
-
  }
  /*
 //  Resultant collision vector is 1	0	1	1	0	0	0	1
