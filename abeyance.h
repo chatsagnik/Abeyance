@@ -19,6 +19,10 @@ struct state{ // Each state has its own collision vector, and an array of next s
 };
 
 int traversedArray[100000];
+float latencyArray[SIZE];
+int latencyIndex = 0;
+float sumOfLatencyToReachNode[100000];
+int noOfEdgesToReachNode[100000];
 
 void initializeCollisionVector(struct collisionVector* c, int col);
 struct collisionVector createInitialCollisionVector(int reservationTable[ROW][COL],int row,int col);
@@ -28,8 +32,19 @@ void displayState(struct state* st);
 void populateDiagram(struct state* firstState, struct collisionVector* initialVector);
 void initializeTraversedArray(void);
 
+void initializeLatencyArray()
+{
+    int i;
+	for(i = 0; i < SIZE; i++){
+		latencyArray[i] = -1;
+		sumOfLatencyToReachNode[i] = 0.0;
+		noOfEdgesToReachNode[i] = 0;
+	}
+}
+
 void initializeTraversedArray()
 {
+    initializeLatencyArray();
 	int i;
 	for(i = 0; i < 100000; i++){
 		traversedArray[i] = 0;
@@ -111,18 +126,18 @@ void displayState(struct state* st)
 	    printf("%d\t",st->cv->arr[i]);
 	}
 	printf("\n");
-	printf("Value of Collision Vector is: %d\n",st->value);
+	/*printf("Value of Collision Vector is: %d\n",st->value);
 	printf("Value of children are: \n");
 	i=0;
 	while(st->latency[i] != -1){
 		printf("Latency of edge to this child node is: %d\n", st->latency[i]);
 		printf("Value of Collision Vector of child node is: %d\n",st->next[i]->value);
 		i++;
-	}
+	}*/
 }
 void populateDiagram(struct state* firstState, struct collisionVector* initialVector)
 {
-    printf("\nInside populateDiagram!\n \n");
+    //printf("\nInside populateDiagram!\n \n");
     
     
 	int i,j,stateIndex = 0;
@@ -142,7 +157,7 @@ void populateDiagram(struct state* firstState, struct collisionVector* initialVe
 
  		}
  	}
- 	displayState(firstState);
+ 	//displayState(firstState);
  	i=0;
 	while(firstState->latency[i] != -1){
 		if(traversedArray[firstState->next[i]->value - 1]){
@@ -153,6 +168,33 @@ void populateDiagram(struct state* firstState, struct collisionVector* initialVe
 		i++;
 	}
 	return;
+}
+
+void dfs(struct state* curr_node , struct state* prev_node)
+{
+	traversedArray[curr_node->value] = 1;
+	int i=0;
+	while(curr_node->latency[i] != -1){
+		// check for self loop
+		if(!traversedArray[curr_node->next[i]->value])
+		{
+			sumOfLatencyToReachNode[curr_node->next[i]->value] = curr_node->latency[i]+sumOfLatencyToReachNode[curr_node->value];
+
+			noOfEdgesToReachNode[curr_node->next[i]->value]  = noOfEdgesToReachNode[curr_node->value]+1;
+            printf("inside non visited-------------\n%d %d %f %d %f\n",curr_node->value,curr_node->next[i]->value , sumOfLatencyToReachNode[curr_node->next[i]->value] , noOfEdgesToReachNode[curr_node->next[i]->value] , sumOfLatencyToReachNode[prev_node->value]);
+            dfs(curr_node->next[i], curr_node);
+		}
+		else{
+		    printf("\n-------------\n%d %d\n",curr_node->value,curr_node->next[i]->value);
+		    float num = ((sumOfLatencyToReachNode[curr_node->value] + curr_node->latency[i]) - sumOfLatencyToReachNode[curr_node->next[i]->value]);
+		    int deno = ((noOfEdgesToReachNode[curr_node->value] +1) - noOfEdgesToReachNode[curr_node->next[i]->value] );
+		    float val = num/deno;
+			printf("Value: %f %d %f\n",num, deno, val);
+			latencyArray[latencyIndex++] = val;
+
+			}
+		i++;
+	}
 }
 
  int main()
@@ -173,15 +215,25 @@ void populateDiagram(struct state* firstState, struct collisionVector* initialVe
  	arr[3][5] = 1;
  	arr[4][6] = 1;
  	arr[4][7] = 1;
+ 	
  	struct collisionVector initialVector = createInitialCollisionVector(arr,10,10);
-	for(i = initialVector.length-1; i > -1; i--){
- 		printf("%d\t",initialVector.arr[i]);
- 	}
-	printf("\n");
+	struct state* firstState = createNewState(&initialVector);
 	
- 	struct state* firstState = createNewState(&initialVector);
+ 	
+ 	struct state* nullState = (struct state*)malloc(sizeof(struct state));
+	nullState->next[0] = firstState;
+	nullState->latency[0] = 0;
+	for(i = 0; i < initialVector.length-1; i++){
+		nullState->latency[i+1] = -1;
+	}
+	nullState->value = 0;
  	initializeTraversedArray();
  	populateDiagram(firstState,&initialVector);
+ 	initializeTraversedArray();
+ 	dfs(firstState,nullState);
+ 	for(i = 0;i <= latencyIndex; i++){
+ 	    printf("%f\n",latencyArray[latencyIndex]);
+ 	}
  	
  }
  /*
