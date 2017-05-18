@@ -18,10 +18,23 @@ struct state{ // Each state has its own collision vector, and an array of next s
 	int latency[SIZE];
 };
 
+int traversedArray[100000];
+
 void initializeCollisionVector(struct collisionVector* c, int col);
 struct collisionVector createInitialCollisionVector(int reservationTable[ROW][COL],int row,int col);
 struct collisionVector* createNewCollisionVector(struct collisionVector* c1,struct collisionVector* c2, int latency);
 struct state* createNewState(struct collisionVector* c);
+void displayState(struct state* st);
+void populateDiagram(struct state* firstState, struct collisionVector* initialVector);
+void initializeTraversedArray(void);
+
+void initializeTraversedArray()
+{
+	int i;
+	for(i = 0; i < 100000; i++){
+		traversedArray[i] = 0;
+	}
+}
 
 void initializeCollisionVector(struct collisionVector* c, int col)
 {
@@ -113,14 +126,13 @@ void populateDiagram(struct state* firstState, struct collisionVector* initialVe
     
     
 	int i,j,stateIndex = 0;
-	
+	traversedArray[firstState->value-1] = 1;
 	
 	
 	for(i = 0; i<initialVector->length; i++){
 	    firstState->latency[i] = -1;
 	}
 	for(i = 0; i< firstState->cv->length; i++){
-	    printf("%d %d\n",i,firstState->cv->arr[i]);
  	    if(firstState->cv->arr[i] == 0){
  	        struct collisionVector* c = createNewCollisionVector(firstState->cv, initialVector, i+1); // creating a collision vector using initial collision vector and the latency
  	        struct state* nextState = createNewState(c); // creating the next state using
@@ -131,8 +143,15 @@ void populateDiagram(struct state* firstState, struct collisionVector* initialVe
  		}
  	}
  	displayState(firstState);
+ 	i=0;
+	while(firstState->latency[i] != -1){
+		if(traversedArray[firstState->next[i]->value - 1]) break; // I dont think break is the answer here. Logically it should be continue, but its not working!!
+		populateDiagram(firstState->next[i], initialVector);
+		i++;
+	}
+	return;
 }
-
+/*
  int main()
  {
  	int arr[ROW][COL], i, j, stateIndex;
@@ -158,15 +177,9 @@ void populateDiagram(struct state* firstState, struct collisionVector* initialVe
 	printf("\n");
 	
  	struct state* firstState = createNewState(&initialVector);
- 	
+ 	initializeTraversedArray();
  	populateDiagram(firstState,&initialVector);
- 	i = 0;
- 	while(i<4){
- 	    printf("\n--------------\n");
- 		populateDiagram(firstState->next[i], &initialVector);
- 		printf("\n--------------\n");
- 		i++;
- 	}
+ 	
  }
  /*
 //  Resultant collision vector is 1	0	1	1	0	0	0	1
