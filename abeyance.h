@@ -145,13 +145,16 @@ void populateDiagram(struct state* firstState, struct collisionVector* initialVe
  	displayState(firstState);
  	i=0;
 	while(firstState->latency[i] != -1){
-		if(traversedArray[firstState->next[i]->value - 1]) break; // I dont think break is the answer here. Logically it should be continue, but its not working!!
+		if(traversedArray[firstState->next[i]->value - 1]){
+		    i++;
+		    continue;
+		}
 		populateDiagram(firstState->next[i], initialVector);
 		i++;
 	}
 	return;
 }
-/*
+
  int main()
  {
  	int arr[ROW][COL], i, j, stateIndex;
