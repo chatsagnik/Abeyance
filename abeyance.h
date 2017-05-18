@@ -20,7 +20,7 @@ struct state{ // Each state has its own collision vector, and an array of next s
 
 void initializeCollisionVector(struct collisionVector* c, int col);
 struct collisionVector createInitialCollisionVector(int reservationTable[ROW][COL],int row,int col);
-struct collisionVector createNewCollisionVector(struct collisionVector* c1,struct collisionVector* c2, int latency);
+struct collisionVector* createNewCollisionVector(struct collisionVector* c1,struct collisionVector* c2, int latency);
 struct state* createNewState(struct collisionVector* c);
 
 void initializeCollisionVector(struct collisionVector* c, int col)
@@ -76,25 +76,31 @@ struct state* createNewState(struct collisionVector* c)
 	return newState;
 }
 
-struct collisionVector createNewCollisionVector(struct collisionVector* c1,struct collisionVector* c2, int latency)
+struct collisionVector* createNewCollisionVector(struct collisionVector* c1,struct collisionVector* c2, int latency)
 {
-	struct collisionVector cv;
-	cv.length = c1->length;
- 	initializeCollisionVector(&cv,c1->length);
+	struct collisionVector* cv = (struct collisionVector*)malloc(sizeof(struct collisionVector));
+	cv->length = c1->length;
+ 	initializeCollisionVector(cv,c1->length);
  	int i;
  	for(i = 0; i < c1->length-latency; i++){
- 	    cv.arr[i] = c1->arr[i+latency];
+ 	    cv->arr[i] = c1->arr[i+latency];
  	}
- 	for(i = 0; i < cv.length; i++){
- 	    cv.arr[i] = cv.arr[i] || c2->arr[i];
+ 	for(i = 0; i < cv->length; i++){
+ 	    cv->arr[i] = cv->arr[i] || c2->arr[i];
  	}
  	return cv;
 }
 void displayState(struct state* st)
 {
+    int i=0;
+    printf("%d\n",st->cv->length);
+    for(i = st->cv->length-1; i>-1; i--){
+	    printf("%d\t",st->cv->arr[i]);
+	}
+	printf("\n");
 	printf("Value of Collision Vector is: %d\n",st->value);
 	printf("Value of children are: \n");
-	int i=0;
+	i=0;
 	while(st->latency[i] != -1){
 		printf("Latency of edge to this child node is: %d\n", st->latency[i]);
 		printf("Value of Collision Vector of child node is: %d\n",st->next[i]->value);
@@ -103,35 +109,30 @@ void displayState(struct state* st)
 }
 void populateDiagram(struct state* firstState, struct collisionVector* initialVector)
 {
+    printf("\nInside populateDiagram!\n \n");
+    
     
 	int i,j,stateIndex = 0;
+	
+	
+	
 	for(i = 0; i<initialVector->length; i++){
 	    firstState->latency[i] = -1;
 	}
 	for(i = 0; i< firstState->cv->length; i++){
+	    printf("%d %d\n",i,firstState->cv->arr[i]);
  	    if(firstState->cv->arr[i] == 0){
- 	        struct collisionVector c = createNewCollisionVector(firstState->cv, initialVector, i+1); // creating a collision vector using initial collision vector and the latency
- 	        printf("\nCollision Vector of State: ");
- 	        for(j = c.length-1; j>-1; j--){
- 	            printf("%d\t",c.arr[j]);
- 	        }
- 	        printf("\nLatency of edge is: %d\n",i+1);
- 	        struct state* nextState = createNewState(&c); // creating the next state using
+ 	        struct collisionVector* c = createNewCollisionVector(firstState->cv, initialVector, i+1); // creating a collision vector using initial collision vector and the latency
+ 	        struct state* nextState = createNewState(c); // creating the next state using
  	        firstState->next[stateIndex] = nextState; // updating the next state
  	        firstState->latency[stateIndex] = i+1; // updating the latency
  	        stateIndex++;
 
  		}
  	}
- 	i = 0;
  	displayState(firstState);
- 	/*
- 	while(firstState->latency[i] != -1){
- 		populateDiagram(firstState->next[i], initialVector);
- 		i++;
- 	}*/
 }
-/*
+
  int main()
  {
  	int arr[ROW][COL], i, j, stateIndex;
@@ -159,6 +160,13 @@ void populateDiagram(struct state* firstState, struct collisionVector* initialVe
  	struct state* firstState = createNewState(&initialVector);
  	
  	populateDiagram(firstState,&initialVector);
+ 	i = 0;
+ 	while(i<4){
+ 	    printf("\n--------------\n");
+ 		populateDiagram(firstState->next[i], &initialVector);
+ 		printf("\n--------------\n");
+ 		i++;
+ 	}
  }
  /*
 //  Resultant collision vector is 1	0	1	1	0	0	0	1
