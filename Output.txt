@@ -1,0 +1,86 @@
+8
+1       0       1       1       0       0       0       1
+Value of Collision Vector is: 177
+Value of children are: 
+Latency of edge to this child node is: 2
+Value of Collision Vector of child node is: 189
+Latency of edge to this child node is: 3
+Value of Collision Vector of child node is: 183
+Latency of edge to this child node is: 4
+Value of Collision Vector of child node is: 187
+Latency of edge to this child node is: 7
+Value of Collision Vector of child node is: 177
+8
+1       0       1       1       1       1       0       1
+Value of Collision Vector is: 189
+Value of children are: 
+Latency of edge to this child node is: 2
+Value of Collision Vector of child node is: 191
+Latency of edge to this child node is: 7
+Value of Collision Vector of child node is: 177
+8
+1       0       1       1       1       1       1       1
+Value of Collision Vector is: 191
+Value of children are: 
+Latency of edge to this child node is: 7
+Value of Collision Vector of child node is: 177
+8
+1       0       1       1       0       1       1       1
+Value of Collision Vector is: 183
+Value of children are: 
+Latency of edge to this child node is: 4
+Value of Collision Vector of child node is: 187
+Latency of edge to this child node is: 7
+Value of Collision Vector of child node is: 177
+8
+1       0       1       1       1       0       1       1
+Value of Collision Vector is: 187
+Value of children are: 
+Latency of edge to this child node is: 3
+Value of Collision Vector of child node is: 183
+Latency of edge to this child node is: 7
+Value of Collision Vector of child node is: 177
+inside non visited-------------
+177 189 2.000000 1 0.000000
+inside non visited-------------
+189 191 4.000000 2 0.000000
+
+-------------
+191 177
+Value: 11.000000 3 3.666667
+
+-------------
+189 177
+Value: 9.000000 2 4.500000
+inside non visited-------------
+177 183 3.000000 1 0.000000
+inside non visited-------------
+183 187 7.000000 2 0.000000
+
+-------------
+187 183
+Value: 7.000000 2 3.500000
+
+-------------
+187 177
+Value: 14.000000 3 4.666667
+
+-------------
+183 177
+Value: 10.000000 2 5.000000
+
+-------------
+177 187
+Value: -3.000000 -1 3.000000
+
+-------------
+177 177
+Value: 7.000000 1 7.000000
+Printing the latencies
+3.666667
+4.500000
+3.500000
+4.666667
+5.000000
+3.000000
+7.000000
