@@ -191,8 +191,7 @@ void dfs(struct state* curr_node , struct state* prev_node)
 		    float val = num/deno;
 			printf("Value: %f %d %f\n",num, deno, val);
 			latencyArray[latencyIndex++] = val;
-
-			}
+		}
 		i++;
 	}
 }
@@ -231,8 +230,9 @@ void dfs(struct state* curr_node , struct state* prev_node)
  	populateDiagram(firstState,&initialVector);
  	initializeTraversedArray();
  	dfs(firstState,nullState);
+ 	printf("Printing the latencies\n");
  	for(i = 0;i <= latencyIndex; i++){
- 	    printf("%f\n",latencyArray[latencyIndex]);
+ 	    printf("%f\n",latencyArray[i]);
  	}
  	
  }
