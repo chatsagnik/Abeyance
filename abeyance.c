@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include "stack.h"
 
 #define ROW 100
 #define COL 100
@@ -18,11 +19,16 @@ struct state{ // Each state has its own collision vector, and an array of next s
 	int latency[SIZE];
 };
 
-int traversedArray[100000];
+int traversedArray[500];
 float latencyArray[SIZE];
 int latencyIndex = 0;
-float sumOfLatencyToReachNode[100000];
-int noOfEdgesToReachNode[100000];
+struct state* adjacencyList[SIZE];
+FILE *fp;
+int presentInStack[SIZE];
+int noOfVertices = 0;
+int hashTable[500];
+int backupHashTable[500];
+int adjMatrix[SIZE][SIZE];
 
 void initializeCollisionVector(struct collisionVector* c, int col);
 struct collisionVector createInitialCollisionVector(int reservationTable[ROW][COL],int row,int col);
@@ -32,21 +38,13 @@ void displayState(struct state* st);
 void populateDiagram(struct state* firstState, struct collisionVector* initialVector);
 void initializeTraversedArray(void);
 
-void initializeLatencyArray()
-{
-    int i;
-	for(i = 0; i < SIZE; i++){
-		latencyArray[i] = -1;
-		sumOfLatencyToReachNode[i] = 0.0;
-		noOfEdgesToReachNode[i] = 0;
-	}
-}
+
 
 void initializeTraversedArray()
 {
-    initializeLatencyArray();
+//    initializeLatencyArray();
 	int i;
-	for(i = 0; i < 100000; i++){
+	for(i = 0; i < 500; i++){
 		traversedArray[i] = 0;
 	}
 }
@@ -126,14 +124,14 @@ void displayState(struct state* st)
 	    printf("%d\t",st->cv->arr[i]);
 	}
 	printf("\n");
-	/*printf("Value of Collision Vector is: %d\n",st->value);
+	printf("Value of Collision Vector is: %d\n",st->value);
 	printf("Value of children are: \n");
 	i=0;
 	while(st->latency[i] != -1){
 		printf("Latency of edge to this child node is: %d\n", st->latency[i]);
 		printf("Value of Collision Vector of child node is: %d\n",st->next[i]->value);
 		i++;
-	}*/
+	}
 }
 void populateDiagram(struct state* firstState, struct collisionVector* initialVector)
 {
@@ -157,7 +155,9 @@ void populateDiagram(struct state* firstState, struct collisionVector* initialVe
 
  		}
  	}
- 	//displayState(firstState);
+ 	adjacencyList[noOfVertices] = firstState;
+ 	noOfVertices++;
+ 	displayState(firstState);
  	i=0;
 	while(firstState->latency[i] != -1){
 		if(traversedArray[firstState->next[i]->value - 1]){
@@ -170,33 +170,187 @@ void populateDiagram(struct state* firstState, struct collisionVector* initialVe
 	return;
 }
 
-void dfs(struct state* curr_node , struct state* prev_node)
-{
-	traversedArray[curr_node->value] = 1;
-	int i=0;
-	while(curr_node->latency[i] != -1){
-		// check for self loop
-		if(!traversedArray[curr_node->next[i]->value])
-		{
-			sumOfLatencyToReachNode[curr_node->next[i]->value] = curr_node->latency[i]+sumOfLatencyToReachNode[curr_node->value];
 
-			noOfEdgesToReachNode[curr_node->next[i]->value]  = noOfEdgesToReachNode[curr_node->value]+1;
-            printf("inside non visited-------------\n%d %d %f %d %f\n",curr_node->value,curr_node->next[i]->value , sumOfLatencyToReachNode[curr_node->next[i]->value] , noOfEdgesToReachNode[curr_node->next[i]->value] , sumOfLatencyToReachNode[prev_node->value]);
-            dfs(curr_node->next[i], curr_node);
-		}
-		else{
-		    printf("\n-------------\n%d %d\n",curr_node->value,curr_node->next[i]->value);
-		    float num = ((sumOfLatencyToReachNode[curr_node->value] + curr_node->latency[i]) - sumOfLatencyToReachNode[curr_node->next[i]->value]);
-		    int deno = ((noOfEdgesToReachNode[curr_node->value] +1) - noOfEdgesToReachNode[curr_node->next[i]->value] );
-		    float val = num/deno;
-			printf("Value: %f %d %f\n",num, deno, val);
-			latencyArray[latencyIndex++] = val;
-		}
-		i++;
+void populateHashTable()
+{
+	int i;
+	for(i = 0; i<noOfVertices; i++){
+		int x = adjacencyList[i]->value;
+		hashTable[x] = i;
+		//backupHashTable[x] = i;
+		//printf("Hashtable for %d has value%d\n", adjacencyList[i]->value,i);
+	}
+}
+void populateBackupHashTable()
+{
+	int i;
+	for(i = 0; i<noOfVertices; i++){
+		int x = adjacencyList[i]->value;
+		//hashTable[x] = i;
+		backupHashTable[x] = i;
+		//printf("Hashtable for %d has value%d\n", adjacencyList[i]->value,i);
 	}
 }
 
- int main()
+void printCycle(struct Stack* stack, int stopValue, int originalValue)
+{
+	
+	int element;
+	fp = fopen("Cycles.txt", "a");// "w" means that we are going to write on this file
+	struct Stack* temp = createStack(stack->capacity);
+	while(!(isEmpty(stack))){
+		element = pop(stack);
+		
+		push(temp,element);
+	}
+	printf("Printing Cycle:\n");
+	while(!(isEmpty(temp))){
+		element = pop(temp);
+		printf("%d ",element);
+		fprintf(fp,"%d ",element);
+		push(stack,element);
+	}
+	element = originalValue;
+	printf("%d \n",element);
+	fprintf(fp,"%d %d ",element, -1);
+	fclose(fp);
+}
+
+void findCycles(struct Stack* stack,int index, int originalValue)
+{
+	int i = index,j;
+
+	push(stack, adjacencyList[i]->value);
+	presentInStack[i] = 1;
+	j = 0;
+    //printf(" %d is pushed onto the stack\n",adjacencyList[i]->value);
+    
+    while(adjacencyList[i]->latency[j] != -1){
+	    	
+		printf("A neighbour node of %d is %d, and its HashValue is %d. Present in stack: %d\n",adjacencyList[i]->value,adjacencyList[i]->next[j]->value, hashTable[adjacencyList[i]->next[j]->value],presentInStack[hashTable[adjacencyList[i]->next[j]->value]]);
+		if(adjacencyList[i]->next[j]->value == originalValue){
+			printf("it is a cycle!\n");
+			printCycle(stack,adjacencyList[i]->value,originalValue);
+			j++;
+		}
+		else if(presentInStack[hashTable[adjacencyList[i]->next[j]->value]]){
+			printf("It is already present in the stack\n");
+			j++;
+			continue;
+		}
+		else{
+			printf("It has to be pushed onto the stack, and a dfs has to be conducted\n");
+			
+			findCycles(stack,hashTable[adjacencyList[i]->next[j]->value],originalValue);
+			
+			j++;
+		}
+	}
+	//printf("Problem after this line\n");
+	//pop(stack);
+	pop(stack);
+	presentInStack[hashTable[adjacencyList[i]->value]] = 0;
+	return;
+}
+
+void removeVertex(int vertexValue)
+{
+	printf("Removing vertex %d\n",vertexValue);
+	int i = 0,j;
+	for(j = i+1; j<noOfVertices; j++){
+		//printf("No problem with %d<noOfVertices %d\n",j,adjacencyList[j]->value);
+		adjacencyList[i] = adjacencyList[j];
+		i++;
+	}
+	//free(adjacencyList[j]);
+	noOfVertices--;
+	//Now removing the vertex from individual adjacency lists
+	for(i = 0; i<noOfVertices; i++){
+		j = 0;
+		//printf("No problem with %d<noOfVertices %d\n",i,adjacencyList[i]->value);
+ 	    while(adjacencyList[i]->latency[j] != -1){
+ 	    	if(adjacencyList[i]->next[j]->value==vertexValue) 
+ 	    		adjacencyList[i]->latency[j] = -1;
+			j++;
+		}
+	}
+	
+}
+
+int cmpfunc (const void * a, const void * b)
+{
+   return ( *(float*)a - *(float*)b );
+}
+
+
+void calculateLatency(int v){
+	/*int i,j;
+	for(i = 0;i < v; i++){
+ 	   for(j = 0;j < v; j++){
+ 			printf("%d\n",adjMatrix[i][j]);	
+ 	   }
+ 	}
+ 	
+ 	printf("%d\n",backupHashTable[177]);
+ 	printf("%d\n",backupHashTable[189]);
+ 	printf("%d\n",backupHashTable[191]);
+ 	printf("%d\n",backupHashTable[183]);
+ 	printf("%d\n",backupHashTable[187]);
+ 	*/
+ 	
+	FILE *f = fopen("Cycles.txt","r");
+	latencyIndex = 0;
+	float latency = 0;
+	int sum = 0;
+	int edge = 0;
+	int i = -2,j = -2, k = -2, x = -2;
+	fscanf(f,"%d %d",&i, &j);
+	while(j != -11){
+		if(j == -1){
+			//either the old cycle can end or the whole process can end
+			//printf("Sum of latencies at this point, and no of edges traversed: %d, %d\n",sum,edge);
+			latency = (float)sum / edge;
+			latencyArray[latencyIndex] = latency;
+			latencyIndex++;
+			printf("Latency for this cycle is: %f\n",latency);
+			sum = 0;
+			edge = 0;
+			fscanf(f,"%d",&x);
+			if(x == -11) break; //whole process ends
+			else{ // x is a vertex
+				//sum += adjMatrix[backupHashTable[k]][backupHashTable[i]];
+				//edge += 1;
+				
+				i = x;
+				fscanf(f,"%d",&j);
+			}
+		}
+		sum += adjMatrix[backupHashTable[i]][backupHashTable[j]];
+		edge += 1;
+		printf("Sum of latencies at this point, and no of edges traversed: %d, %d\n",sum,edge);
+		i = j;
+		k = i; // used in case the old cycle ends
+		fscanf(f,"%d",&j);
+	}
+	/*
+	while(i != -11 || j!= -11){
+		while(i != -1 || j != -1){
+			printf("Vertices in the loop: %d-->%d\n",i,j);
+			sum += adjMatrix[backupHashTable[i]][backupHashTable[j]];
+			edge += 1;
+			printf("Sum of latencies at this point, and no of edges traversed: %d, %d\n",sum,edge);
+			fscanf(f,"%d %d",&i,&j);
+			printf("Vertices in the loop: %d-->%d\n",backupHashTable[i],backupHashTable[j]);
+		}
+		latency = (float)sum / edge;
+		printf("Latency for this cycle is: %f",latency);
+		
+	}
+	*/
+	
+}
+
+int main()
  {
  	int arr[ROW][COL], i, j, stateIndex;
  	for(i = 0; i < 10; i++){
@@ -229,12 +383,60 @@ void dfs(struct state* curr_node , struct state* prev_node)
  	initializeTraversedArray();
  	populateDiagram(firstState,&initialVector);
  	initializeTraversedArray();
- 	dfs(firstState,nullState);
- 	printf("Printing the latencies\n");
- 	for(i = 0;i <= latencyIndex; i++){
- 	    printf("%f\n",latencyArray[i]);
+ 	int cycles = noOfVertices;
+ 	populateHashTable();
+ 	populateBackupHashTable();
+ 	
+ 	for(i = 0;i < noOfVertices; i++){
+ 	    j = 0;
+ 	    while(adjacencyList[i]->latency[j] != -1){
+	
+			adjMatrix[backupHashTable[adjacencyList[i]->value]][backupHashTable[adjacencyList[i]->next[j]->value]] = adjacencyList[i]->latency[j];
+			j++;
+		}
+	
  	}
  	
+ 	//struct Stack* blockedStack = createStack(100);
+ 	int index = 0;
+ 	
+ 	for(index = 0; index < cycles; index++){
+ 	printf("---------------Iteration--------------\n");
+ 	printf("Printing the current adjacencyList: \n");
+ 	for(i = 0;i < noOfVertices; i++){
+ 			//presentInStack[i] = 0;
+ 	    	j = 0;
+ 			printf("The current node is: %d\n",adjacencyList[i]->value);
+ 	    	while(adjacencyList[i]->latency[j] != -1){
+		//		printf("%d,%d\n",adjacencyList[i]->next[j]->value,adjacencyList[i]->latency[j]);
+				j++;
+			}
+ 		}
+ 		//printf("\n");
+ 		struct Stack* stack = createStack(100);
+ 		findCycles(stack,0,adjacencyList[0]->value);
+ 		//printf("problem at 297\n");
+ 		removeVertex(adjacencyList[0]->value); // After removing the vertex, the whole array is shifted left so it always starts from 0.
+ 		//printf("problem at 299\n");
+ 		populateHashTable();
+ 		free(stack);
+ 	}
+ 	fp = fopen("Cycles.txt","a");
+ 	fprintf(fp,"%d %d",-11,-12);
+ 	fclose(fp);
+ 	calculateLatency(cycles);
+ 	qsort(latencyArray,latencyIndex,sizeof(float),cmpfunc);
+ 	for(i = 0; i < latencyIndex-1; i++){
+ 		for(j = i+1; j < latencyIndex; j++){
+ 			if(latencyArray[i] > latencyArray[j]){
+ 				float temp = latencyArray[j];
+ 				latencyArray[j] = latencyArray[i];
+ 				latencyArray[i] = temp;
+ 			}
+ 		}
+ 		
+ 	}
+ 	printf("\nThe minimum average latency for this pipeline is: %f\n",latencyArray[0]);
  }
  /*
 //  Resultant collision vector is 1	0	1	1	0	0	0	1
