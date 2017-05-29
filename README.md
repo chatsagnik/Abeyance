@@ -17,7 +17,7 @@ The computer pipeline is divided in a number of stages. Each stage
 completes a part of an instruction in parallel. The stages are connected
 to each other to form a pipe - instructions enter at one end, progress
 through the stages, and exit at the other end.\
-Before we proceed, a few important things to note about pipelines are:
+Before I proceed, a few important things to note about pipelines are:
 
 -   Pipelining does not decrease latency or the time for individual
     instruction execution.
@@ -61,7 +61,7 @@ particular pipeline stage.
 Output
 ------
 
-Our program produces the following output on being provided with a
+My program produces the following output on being provided with a
 reservation table:
 
 -   A single floating point value denoting the minimum average latency
@@ -81,7 +81,7 @@ Procedure
 ---------
 
 : The whole process can be divided into 8 atomic stages which must be
-conducted sequentially for us to derive the aforementioned outputs from
+conducted sequentially for me to derive the aforementioned outputs from
 the reservation table. These stages are listed below:
 
 1.  Find non-repeating Forbidden Latencies from reservation table.
@@ -124,7 +124,7 @@ Designing the States
 Each state is based on it’s unique collision vector. Also each state has
 an array of next states, and edge weights in a One-One correspondence
 with every element of the next states.\
-After some deliberation we came up with the following structures to
+After some deliberation I came up with the following structures to
 accommodate the aforementioned specifications:
 
     struct collisionVector{
@@ -142,14 +142,14 @@ accommodate the aforementioned specifications:
 Creating a Directed Graph representing the State Diagram
 --------------------------------------------------------
 
-The function $populateDiagram()$ basically does a depth first population
+The function **populateDiagram()** basically does a depth first population
 of the state diagram. It takes each node as it is created, and computes
 every possible child node (and the edges to these child nodes). Later
 the function is recursively called for every child node if they have not
 been populated earlier.\
 \
-While each node is being thus populated, we are simulataneously
-constructing an Adjacency List representation of the Directed Graph
+While each node is being thus populated, I simulataneously
+construct an Adjacency List representation of the Directed Graph
 which the State Diagram ultimately represents.\
 \
 **function $populateDiagram()$**\
@@ -200,28 +200,28 @@ Finding all Elementary Cycles of a Directed Graph
 -------------------------------------------------
 
 This problem is a well known NP-Hard problem (possibly even PSPACE). In
-our ignorance, at first we tried doing a simple DFS search (modified to
-fit our needs) on the adjacency list. However the search yielded results
+all my ignorance, at first I tried doing a simple DFS search (modified to
+fit my needs) on the adjacency list. However the search yielded results
 which were duplicate, and ignored some crucial cycles in the graph. This
-lead us to realize that there was more to this particular problem than
-met the eye, and we started researching on the topic.\
-We came up with quite a few papers published from 1970 (by Tiernan) to
+lead me to realize that there was more to this particular problem than
+met the eye, and I started researching on the topic.\
+I came across quite a few papers published from 1970 (by Tiernan) to
 1975 (by Johnson) that gave approximate algorithms to solve the problem.
 The best algorithm in this case was clearly Johnson’s algorithm by his
 own admission. 
 
 This shows that even after reducing the Running Time complexity by an
-order of O(e.(c+1)), we were still left with an exponential time
+order of O(e.(c+1)), I was still left with an exponential time
 complexity since the number of elementary circuits in the graph could
 itself be exponential in nature.\
 Also just because Johnson’s algorithm was the best in terms of running
-time complexity, didn’t mean it was the most adaptable to our situation.
+time complexity, didn’t mean it was the most adaptable to my situation.
 Note that Johnson’s algorithm itself is not explained in detail here, as
-we ended up using our own modified version. We had to code the program
+I ended up using my own modified version. I had to code the program
 **entirely in ANSI C**, and Johnson’s algorithm provided the following
 challenges:
 
--   We needed to implement an algorithm to find and return Strongly
+-   I needed to implement an algorithm to find and return Strongly
     Connected Components to the main algorithm. This meant implementing
     either Tarjan’s algorithm or Kosaraju’s algorithm and somehow
     returning the set of Strongly Connected Components to the main
@@ -231,7 +231,7 @@ challenges:
     blocket set and a blocked map, which are quite tricky to implement
     in C.
 
-We made the following discoveries which led to our own modified
+I made the following discoveries which led to our own modified
 algorithm:
 
 -   The Blocking Mechanism in Johnson’s algorithm could be ignored with
