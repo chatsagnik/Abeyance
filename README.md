@@ -1,21 +1,3 @@
-<style TYPE="text/css">
-code.has-jax {font: inherit; font-size: 100%; background: inherit; border: inherit;}
-</style>
-<script type="text/x-mathjax-config">
-MathJax.Hub.Config({
-    tex2jax: {
-        inlineMath: [['$','$'], ['\\(','\\)']],
-        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'] // removed 'code' entry
-    }
-});
-MathJax.Hub.Queue(function() {
-    var all = MathJax.Hub.getAllJax(), i;
-    for(i = 0; i < all.length; i += 1) {
-        all[i].SourceElement().parentNode.className += ' has-jax';
-    }
-});
-</script>
-<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 ---
 Author:
 - 'Sagnik Chatterjee'
@@ -173,23 +155,23 @@ which the State Diagram ultimately represents.\
 **function $populateDiagram()$**\
 **Input**:
 
--   $struct$ $state*$ $firstState$\
+-   'struct state* firstState'\
     This is the very first state created from the initial collision
     vector. This state serves as the seed for the population process of
     the State Diagram.
 
--   $struct$ $collisionVector*$ $initialVector$\
+-   'struct$ collisionVector* initialVector'\
     This is the initial collision vector which was created from the
     input reservation table.
 
 **Output**: None\
 **Global Variables**:
 
--   $struct$ $state*$ $adjacencyList[]$\
+-   'struct state* adjacencyList[]'\
     This is an Adjacency List used to store the directed graph notation
     of the state diagram.
 
--   $struct$ $state*$ $traversedArray[]$\
+-   'struct state* traversedArray[]'\
     This is a hashtable used to implement the Depth First population of
     the states in the state diagram.
 
@@ -226,20 +208,10 @@ met the eye, and we started researching on the topic.\
 We came up with quite a few papers published from 1970 (by Tiernan) to
 1975 (by Johnson) that gave approximate algorithms to solve the problem.
 The best algorithm in this case was clearly Johnson’s algorithm by his
-own admission. In Donald B. Johnson’s 1975 paper on the same topic he
-says,
-
-> “”There are exactly $$\sum_{i=1}^{n-1} \binom{n}{n-i+1}(n-i)!$$
-> elementary circuits in a complete directed graph with $n$ vertices.
-> Thus the number of elementary circuits in a directed graph can grow
-> faster with n than the exponential $2^n$. So it is clear that our
-> algorithm, which has a time bound of $O((n + e)(c + 1))$ on any graph
-> with $n$ vertices, $e$ edges and $c$ elementary circuits, is feasible
-> for a substantially larger class of problems than the best algorithms
-> previously known which realize a time bound of $O(n. e(c + 1))$.“”
+own admission. 
 
 This shows that even after reducing the Running Time complexity by an
-order of $O(e.(c+1))$, we were still left with an exponential time
+order of O(e.(c+1)), we were still left with an exponential time
 complexity since the number of elementary circuits in the graph could
 itself be exponential in nature.\
 Also just because Johnson’s algorithm was the best in terms of running
@@ -270,7 +242,7 @@ algorithm:
 -   The initial state diagram is always a strongly connected component.
     And even if resultant state diagrams (after removing vertices)
     aren’t strongly connected components, we just incur an extra penalty
-    of $O(n^2)$ at most for searching through the adjacency list looking
+    of O(n^2) at most for searching through the adjacency list looking
     for cycles that don’t exist.
 
 A concise algorithm for our implementation is given as follows:
