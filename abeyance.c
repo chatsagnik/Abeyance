@@ -212,7 +212,7 @@ void printCycle(struct Stack* stack, int stopValue, int originalValue)
 	}
 	element = originalValue;
 	printf("%d \n",element);
-	fprintf(fp,"%d %d ",element, -1);
+	fprintf(fp,"%d %d \n",element, -1);
 	fclose(fp);
 }
 
@@ -352,24 +352,23 @@ void calculateLatency(int v){
 
 int main()
  {
+ 	fp = fopen("Cycles.txt","w");
+ 	fclose(fp);
  	int arr[ROW][COL], i, j, stateIndex;
- 	for(i = 0; i < 10; i++){
- 		for(j = 0; j < 10; j++){
- 			arr[i][j] = 0;
+ 	int row, col;
+ 	FILE *input;
+ 	input = fopen("Reservation.txt","r");
+ 	fscanf(input,"%d %d",&row,&col);
+ 	for(i = 0; i < row; i++){
+ 		for(j = 0; j < col; j++){
+ 			
+ 			fscanf(input,"%d",&arr[i][j]);
+ 			if(arr[i][j] == 1)
+ 				printf("%d %d\n",i,j);
  		}
  	}
- 	arr[0][0] = 1;
- 	arr[0][8] = 1;
- 	arr[1][1] = 1;
- 	arr[1][2] = 1;
- 	arr[1][7] = 1;
- 	arr[2][3] = 1;
- 	arr[3][4] = 1;
- 	arr[3][5] = 1;
- 	arr[4][6] = 1;
- 	arr[4][7] = 1;
- 	
- 	struct collisionVector initialVector = createInitialCollisionVector(arr,10,10);
+ 	fclose(input);
+ 	struct collisionVector initialVector = createInitialCollisionVector(arr,row,col);
 	struct state* firstState = createNewState(&initialVector);
 	
  	
@@ -386,6 +385,8 @@ int main()
  	int cycles = noOfVertices;
  	populateHashTable();
  	populateBackupHashTable();
+ 	int k;
+ 	
  	
  	for(i = 0;i < noOfVertices; i++){
  	    j = 0;
@@ -421,11 +422,15 @@ int main()
  		populateHashTable();
  		free(stack);
  	}
+ 	
  	fp = fopen("Cycles.txt","a");
  	fprintf(fp,"%d %d",-11,-12);
  	fclose(fp);
  	calculateLatency(cycles);
- 	qsort(latencyArray,latencyIndex,sizeof(float),cmpfunc);
+ 	int demoLatencyArray[latencyIndex];
+ 	for(k = 0; k < latencyIndex - 1; k++){
+ 		demoLatencyArray[k] = latencyArray[k];
+ 	}
  	for(i = 0; i < latencyIndex-1; i++){
  		for(j = i+1; j < latencyIndex; j++){
  			if(latencyArray[i] > latencyArray[j]){
@@ -436,7 +441,29 @@ int main()
  		}
  		
  	}
+ 	for(k = 0; k < latencyIndex - 1; k++){
+ 		if(latencyArray[0] == demoLatencyArray[k])
+ 			break;
+ 	}
+ 	fp = fopen("Cycles.txt","r");
+ 	int count = -1;
+ 	while(count != (k-1)){
+ 		int elem;
+ 		fscanf(fp,"%d",&elem);
+ 		if(elem == -1) count++;
+ 	}
+ 	int elem = 0;
  	printf("\nThe minimum average latency for this pipeline is: %f\n",latencyArray[0]);
+ 	printf("The Cycle containing the minimum average latency is: ");
+ 	fscanf(fp,"%d",&elem);
+ 	while(elem !=-1){
+ 		printf("%d ",elem);
+ 		fscanf(fp,"%d",&elem);
+ 	}
+ 	printf("\n");
+ 	fclose(fp);
+ 	
+ 	
  }
  /*
 //  Resultant collision vector is 1	0	1	1	0	0	0	1
