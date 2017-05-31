@@ -119,6 +119,7 @@ struct collisionVector* createNewCollisionVector(struct collisionVector* c1,stru
 void displayState(struct state* st)
 {
     int i=0;
+    #ifdef DEBUG
     printf("%d\n",st->cv->length);
     for(i = st->cv->length-1; i>-1; i--){
 	    printf("%d\t",st->cv->arr[i]);
@@ -132,6 +133,7 @@ void displayState(struct state* st)
 		printf("Value of Collision Vector of child node is: %d\n",st->next[i]->value);
 		i++;
 	}
+	#endif
 }
 void populateDiagram(struct state* firstState, struct collisionVector* initialVector)
 {
@@ -203,15 +205,18 @@ void printCycle(struct Stack* stack, int stopValue, int originalValue)
 		
 		push(temp,element);
 	}
+	#ifdef DEBUG
 	printf("Printing Cycle:\n");
+    #endif
+
 	while(!(isEmpty(temp))){
 		element = pop(temp);
-		printf("%d ",element);
+		// printf("%d ",element);
 		fprintf(fp,"%d ",element);
 		push(stack,element);
 	}
 	element = originalValue;
-	printf("%d \n",element);
+	// printf("%d \n",element);
 	fprintf(fp,"%d %d \n",element, -1);
 	fclose(fp);
 }
@@ -226,21 +231,31 @@ void findCycles(struct Stack* stack,int index, int originalValue)
     //printf(" %d is pushed onto the stack\n",adjacencyList[i]->value);
     
     while(adjacencyList[i]->latency[j] != -1){
-	    	
+	    #ifdef DEBUG
 		printf("A neighbour node of %d is %d, and its HashValue is %d. Present in stack: %d\n",adjacencyList[i]->value,adjacencyList[i]->next[j]->value, hashTable[adjacencyList[i]->next[j]->value],presentInStack[hashTable[adjacencyList[i]->next[j]->value]]);
+		#endif
+
 		if(adjacencyList[i]->next[j]->value == originalValue){
+			#ifdef DEBUG
 			printf("it is a cycle!\n");
+			#endif
+
 			printCycle(stack,adjacencyList[i]->value,originalValue);
 			j++;
 		}
 		else if(presentInStack[hashTable[adjacencyList[i]->next[j]->value]]){
+			#ifdef DEBUG
 			printf("It is already present in the stack\n");
+			#endif
+
 			j++;
 			continue;
 		}
 		else{
+			#ifdef DEBUG
 			printf("It has to be pushed onto the stack, and a dfs has to be conducted\n");
-			
+			#endif
+
 			findCycles(stack,hashTable[adjacencyList[i]->next[j]->value],originalValue);
 			
 			j++;
@@ -255,7 +270,10 @@ void findCycles(struct Stack* stack,int index, int originalValue)
 
 void removeVertex(int vertexValue)
 {
+	#ifdef DEBUG
 	printf("Removing vertex %d\n",vertexValue);
+	#endif
+
 	int i = 0,j;
 	for(j = i+1; j<noOfVertices; j++){
 		//printf("No problem with %d<noOfVertices %d\n",j,adjacencyList[j]->value);
@@ -312,7 +330,10 @@ void calculateLatency(int v){
 			latency = (float)sum / edge;
 			latencyArray[latencyIndex] = latency;
 			latencyIndex++;
+			#ifdef DEBUG
 			printf("Latency for this cycle is: %f\n",latency);
+			#endif
+
 			sum = 0;
 			edge = 0;
 			fscanf(f,"%d",&x);
@@ -327,7 +348,10 @@ void calculateLatency(int v){
 		}
 		sum += adjMatrix[backupHashTable[i]][backupHashTable[j]];
 		edge += 1;
+		#ifdef DEBUG
 		printf("Sum of latencies at this point, and no of edges traversed: %d, %d\n",sum,edge);
+		#endif
+
 		i = j;
 		k = i; // used in case the old cycle ends
 		fscanf(f,"%d",&j);
@@ -363,8 +387,8 @@ int main()
  		for(j = 0; j < col; j++){
  			
  			fscanf(input,"%d",&arr[i][j]);
- 			if(arr[i][j] == 1)
- 				printf("%d %d\n",i,j);
+ 			// if(arr[i][j] == 1)
+ 				//sprintf("%d %d\n",i,j);
  		}
  	}
  	fclose(input);
@@ -402,12 +426,18 @@ int main()
  	int index = 0;
  	
  	for(index = 0; index < cycles; index++){
+ 	#ifdef DEBUG
  	printf("---------------Iteration--------------\n");
  	printf("Printing the current adjacencyList: \n");
+	#endif
+
  	for(i = 0;i < noOfVertices; i++){
  			//presentInStack[i] = 0;
  	    	j = 0;
+ 	    	#ifdef DEBUG
  			printf("The current node is: %d\n",adjacencyList[i]->value);
+ 			#endif
+
  	    	while(adjacencyList[i]->latency[j] != -1){
 		//		printf("%d,%d\n",adjacencyList[i]->next[j]->value,adjacencyList[i]->latency[j]);
 				j++;
